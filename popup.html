@@ -6,146 +6,511 @@
     <title>Element Copy</title>
     <style>
         body {
-            width: 300px;
-            min-height: 200px;
+            width: 350px;
+            min-height: 400px;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f8f9fa;
+            color: #2c3e50;
         }
 
         .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
             text-align: center;
-            margin-bottom: 20px;
         }
 
         .header h1 {
             margin: 0 0 5px 0;
-            font-size: 20px;
-            color: #2c3e50;
+            font-size: 22px;
+            font-weight: 600;
         }
 
         .header p {
             margin: 0;
             font-size: 14px;
-            color: #7f8c8d;
+            opacity: 0.9;
         }
 
-        .instructions {
+        .container {
+            padding: 20px;
+        }
+
+        .section {
             background: white;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #e1e5e9;
         }
 
-        .instructions h3 {
-            margin: 0 0 10px 0;
+        .section-title {
+            margin: 0 0 12px 0;
             font-size: 16px;
+            font-weight: 600;
             color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .instructions ol {
-            margin: 0;
-            padding-left: 20px;
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
         }
 
-        .instructions li {
-            margin-bottom: 5px;
-            font-size: 13px;
-            color: #555;
-            line-height: 1.4;
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ddd;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
         }
 
-        .features {
+        .toggle-switch.active {
+            background: #4CAF50;
+        }
+
+        .toggle-switch .slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
             background: white;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        .features h3 {
-            margin: 0 0 10px 0;
-            font-size: 16px;
-            color: #2c3e50;
+        .toggle-switch.active .slider {
+            transform: translateX(30px);
         }
 
-        .features ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        .features li {
-            margin-bottom: 5px;
-            font-size: 13px;
-            color: #555;
-            line-height: 1.4;
-        }
-
-        .status {
-            text-align: center;
-            margin-top: 15px;
-            padding: 10px;
-            background: #e8f5e8;
-            border-radius: 6px;
-            border: 1px solid #4CAF50;
-        }
-
-        .status-text {
-            margin: 0;
-            font-size: 13px;
-            color: #2e7d32;
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
             font-weight: 500;
         }
 
-        .tip {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+        }
+
+        .status-dot.disabled {
+            background: #f44336;
+        }
+
+        .keybind-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .keybind-item:last-child {
+            border-bottom: none;
+        }
+
+        .keybind-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .keybind-label {
+            font-size: 13px;
+            color: #555;
+            flex: 1;
+        }
+
+        .keybind-combo {
+            display: flex;
+            gap: 4px;
+        }
+
+        .key {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 3px 7px;
+            font-size: 11px;
+            font-family: monospace;
+            font-weight: 600;
+            color: #495057;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .edit-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .edit-btn:hover {
+            background: #5a6268;
+        }
+
+        .edit-btn.editing {
+            background: #dc3545;
+        }
+
+        .instructions-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .instructions-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .tip-box {
+            background: #e8f4fd;
+            border: 1px solid #b8daff;
             border-radius: 6px;
-            padding: 10px;
-            margin-top: 15px;
+            padding: 12px;
+            margin-top: 16px;
         }
 
         .tip-text {
             margin: 0;
             font-size: 12px;
-            color: #856404;
+            color: #0c5460;
+            line-height: 1.4;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 11px;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+            background: white;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .customize-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .customize-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .keybind-editor {
+            display: none;
+            margin-top: 16px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+        }
+
+        .keybind-editor.active {
+            display: block;
+        }
+
+        .editor-header {
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .keybind-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            margin-bottom: 8px;
+            background: white;
+            text-align: center;
+            font-weight: 600;
+            box-sizing: border-box;
+        }
+
+        .keybind-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .editor-tip {
+            font-size: 12px;
+            color: #6c757d;
+            text-align: center;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .btn-save {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #218838;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+
+        .btn-reset {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-reset:hover {
+            background: #e0a800;
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Element Copy</h1>
-        <p>Copy any HTML element with a right-click</p>
+        <p>Advanced HTML element copying tool</p>
     </div>
 
-    <div class="instructions">
-        <h3>How to Use:</h3>
-        <ol>
-            <li>Navigate to any webpage</li>
-            <li>Right-click on any element you want to copy</li>
-            <li>Select "Copy Element" from the context menu</li>
-            <li>The element's HTML will be copied to your clipboard</li>
-        </ol>
+    <div class="container">
+        <!-- Status Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>🔧</span>
+                Extension Status
+            </div>
+            <div class="toggle-container">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Extension Enabled</span>
+                </div>
+                <div class="toggle-switch active" id="toggleSwitch">
+                    <div class="slider"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keybinds Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>⌨️</span>
+                Keyboard Shortcuts
+            </div>
+            
+            <div class="keybind-item" data-action="copyElement">
+                <span class="keybind-label">Copy element under cursor</span>
+                <div class="keybind-right">
+                    <div class="keybind-combo" id="copyElement-display">
+                        <span class="key">Ctrl</span>
+                        <span class="key">Shift</span>
+                        <span class="key">C</span>
+                    </div>
+                    <button class="edit-btn" data-action="copyElement">Edit</button>
+                </div>
+            </div>
+            
+            <div class="keybind-item" data-action="selectParent">
+                <span class="keybind-label">Select parent element</span>
+                <div class="keybind-right">
+                    <div class="keybind-combo" id="selectParent-display">
+                        <span class="key">Ctrl</span>
+                        <span class="key">Shift</span>
+                        <span class="key">↑</span>
+                    </div>
+                    <button class="edit-btn" data-action="selectParent">Edit</button>
+                </div>
+            </div>
+            
+            <div class="keybind-item" data-action="selectChild">
+                <span class="keybind-label">Select child element</span>
+                <div class="keybind-right">
+                    <div class="keybind-combo" id="selectChild-display">
+                        <span class="key">Ctrl</span>
+                        <span class="key">Shift</span>
+                        <span class="key">↓</span>
+                    </div>
+                    <button class="edit-btn" data-action="selectChild">Edit</button>
+                </div>
+            </div>
+            
+            <div class="keybind-item" data-action="copySelected">
+                <span class="keybind-label">Copy selected element</span>
+                <div class="keybind-right">
+                    <div class="keybind-combo" id="copySelected-display">
+                        <span class="key">Ctrl</span>
+                        <span class="key">Shift</span>
+                        <span class="key">Enter</span>
+                    </div>
+                    <button class="edit-btn" data-action="copySelected">Edit</button>
+                </div>
+            </div>
+            
+            <div class="keybind-item" data-action="cancel">
+                <span class="keybind-label">Cancel selection</span>
+                <div class="keybind-right">
+                    <div class="keybind-combo" id="cancel-display">
+                        <span class="key">Esc</span>
+                    </div>
+                    <button class="edit-btn" data-action="cancel">Edit</button>
+                </div>
+            </div>
+
+            <div class="keybind-editor" id="keybindEditor">
+                <div class="editor-header">
+                    <span id="editingLabel">Editing: Copy element under cursor</span>
+                </div>
+                <input type="text" class="keybind-input" placeholder="Press new key combination..." id="keybindInput" readonly>
+                <div class="editor-tip">Press the key combination you want to use</div>
+                <div class="btn-group">
+                    <button class="btn btn-reset" id="resetBtn">Reset to Default</button>
+                    <button class="btn btn-cancel" id="cancelBtn">Cancel</button>
+                    <button class="btn btn-save" id="saveBtn">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>📖</span>
+                How to Use
+            </div>
+            <ul class="instructions-list">
+                <li>
+                    <span class="step-number">1</span>
+                    <span>Navigate to any webpage</span>
+                </li>
+                <li>
+                    <span class="step-number">2</span>
+                    <span>Use hotkeys or right-click on elements</span>
+                </li>
+                <li>
+                    <span class="step-number">3</span>
+                    <span>Navigate parent/child elements with arrow keys</span>
+                </li>
+                <li>
+                    <span class="step-number">4</span>
+                    <span>HTML is automatically copied to clipboard</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Features Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>✨</span>
+                Features
+            </div>
+            <ul class="instructions-list">
+                <li>
+                    <span style="color: #28a745;">✓</span>
+                    <span>Hotkey support for dropdown menus</span>
+                </li>
+                <li>
+                    <span style="color: #28a745;">✓</span>
+                    <span>Parent/child element navigation</span>
+                </li>
+                <li>
+                    <span style="color: #28a745;">✓</span>
+                    <span>Visual highlighting and feedback</span>
+                </li>
+                <li>
+                    <span style="color: #28a745;">✓</span>
+                    <span>Works on all websites</span>
+                </li>
+                <li>
+                    <span style="color: #28a745;">✓</span>
+                    <span>Fallback clipboard support</span>
+                </li>
+            </ul>
+        </div>
     </div>
 
-    <div class="features">
-        <h3>Features:</h3>
-        <ul>
-            <li>Copy complete HTML elements with all attributes</li>
-            <li>Works on any website</li>
-            <li>Visual notification when element is copied</li>
-            <li>Hold Ctrl and hover to preview elements</li>
-            <li>Fallback support for older browsers</li>
-        </ul>
+    <div class="tip-box">
+        <p class="tip-text">
+            <strong>Pro Tip:</strong> Hold Ctrl while hovering to preview elements before copying. Use Ctrl+Shift+C for quick copying without closing dropdowns!
+        </p>
     </div>
 
-    <div class="status">
-        <p class="status-text">✓ Extension is active and ready to use</p>
+    <div class="footer">
+        Element Copy v2.0 • Enhanced with hotkey navigation
     </div>
 
-    <div class="tip">
-        <p class="tip-text"><strong>Tip:</strong> Hold Ctrl while hovering over elements to see a preview highlight of what will be copied.</p>
-    </div>
+    <script src="popup.js"></script>
 </body>
 </html>
