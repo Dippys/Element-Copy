@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Element Copy",
-  "version": "2.0",
-  "description": "Right-click on any element to copy its HTML",
+  "version": "2.5",
+  "description": "Advanced HTML element selection and copying capabilities",
   "permissions": [
     "contextMenus",
     "activeTab",

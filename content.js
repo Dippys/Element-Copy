@@ -112,6 +112,7 @@ document.addEventListener('keydown', (event) => {
     if (hoveredElement) {
       currentSelectedElement = hoveredElement;
       selectedElementIndex = 0;
+      scrollElementIntoView(currentSelectedElement);
       copyCurrentElement();
     } else {
       showNotification("No element under cursor", 'error');
@@ -127,6 +128,7 @@ document.addEventListener('keydown', (event) => {
       currentSelectedElement = elementStack[selectedElementIndex];
       highlightCurrentElement();
       showElementInfo();
+      scrollElementIntoView(currentSelectedElement);
     }
   }
   
@@ -139,6 +141,46 @@ document.addEventListener('keydown', (event) => {
       currentSelectedElement = elementStack[selectedElementIndex];
       highlightCurrentElement();
       showElementInfo();
+      scrollElementIntoView(currentSelectedElement);
+    }
+  }
+  
+  // During red selector state - Ctrl + arrow keys for spatial DOM navigation
+  if (currentSelectedElement && event.ctrlKey && !event.shiftKey) {
+    let newElement = null;
+    
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      newElement = findElementInDirection(currentSelectedElement, 'left');
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      newElement = findElementInDirection(currentSelectedElement, 'right');
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      newElement = findElementInDirection(currentSelectedElement, 'up');
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      newElement = findElementInDirection(currentSelectedElement, 'down');
+    }
+    
+    if (newElement) {
+      // Update the element stack based on new selection
+      elementStack = [];
+      let current = newElement;
+      while (current && current !== document.body && current !== document.documentElement) {
+        elementStack.push(current);
+        current = current.parentElement;
+      }
+      
+      currentSelectedElement = newElement;
+      selectedElementIndex = 0;
+      highlightCurrentElement();
+      showElementInfo();
+      scrollElementIntoView(currentSelectedElement);
+    } else {
+      // Show feedback when no element is found in that direction
+      let direction = event.key.replace('Arrow', '').toLowerCase();
+      showNotification(`No element found ${direction}`, 'info');
     }
   }
   
@@ -211,6 +253,118 @@ function clearSelection() {
   selectedElementIndex = 0;
   if (highlightOverlay) {
     highlightOverlay.style.display = 'none';
+  }
+}
+
+// Spatial DOM navigation - find elements based on position
+function findElementInDirection(fromElement, direction) {
+  const fromRect = fromElement.getBoundingClientRect();
+  const fromCenter = {
+    x: fromRect.left + fromRect.width / 2,
+    y: fromRect.top + fromRect.height / 2
+  };
+  
+  // Get all visible elements on the page
+  const allElements = Array.from(document.querySelectorAll('*')).filter(el => {
+    if (el === fromElement) return false;
+    
+    const rect = el.getBoundingClientRect();
+    const style = window.getComputedStyle(el);
+    
+    // Filter out invisible, very small, or non-interactive elements
+    return rect.width > 5 && 
+           rect.height > 5 && 
+           style.visibility !== 'hidden' && 
+           style.display !== 'none' &&
+           rect.top >= 0 && 
+           rect.left >= 0 &&
+           rect.bottom <= window.innerHeight + 100 && // Allow some overflow
+           rect.right <= window.innerWidth + 100;
+  });
+  
+  let bestElement = null;
+  let bestDistance = Infinity;
+  let bestScore = Infinity;
+  
+  allElements.forEach(element => {
+    const rect = element.getBoundingClientRect();
+    const center = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    };
+    
+    let isInDirection = false;
+    let primaryDistance = 0;
+    let secondaryDistance = 0;
+    
+    switch (direction) {
+      case 'left':
+        isInDirection = center.x < fromCenter.x;
+        primaryDistance = fromCenter.x - center.x;
+        secondaryDistance = Math.abs(center.y - fromCenter.y);
+        break;
+      case 'right':
+        isInDirection = center.x > fromCenter.x;
+        primaryDistance = center.x - fromCenter.x;
+        secondaryDistance = Math.abs(center.y - fromCenter.y);
+        break;
+      case 'up':
+        isInDirection = center.y < fromCenter.y;
+        primaryDistance = fromCenter.y - center.y;
+        secondaryDistance = Math.abs(center.x - fromCenter.x);
+        break;
+      case 'down':
+        isInDirection = center.y > fromCenter.y;
+        primaryDistance = center.y - fromCenter.y;
+        secondaryDistance = Math.abs(center.x - fromCenter.x);
+        break;
+    }
+    
+    if (isInDirection && primaryDistance > 0) {
+      // Calculate a score that prioritizes closer elements in the primary direction
+      // but also considers alignment in the secondary direction
+      const score = primaryDistance + (secondaryDistance * 0.5);
+      
+      if (score < bestScore) {
+        bestScore = score;
+        bestElement = element;
+        bestDistance = primaryDistance;
+      }
+    }
+  });
+  
+  return bestElement;
+}
+
+// Function to scroll element into view if it's outside viewport or intersecting edges
+function scrollElementIntoView(element) {
+  if (!element) return;
+  
+  const rect = element.getBoundingClientRect();
+  const viewportHeight = window.innerHeight;
+  const viewportWidth = window.innerWidth;
+  
+  // Check if element is outside viewport or intersecting edges
+  const isOutsideTop = rect.top < 0;
+  const isOutsideBottom = rect.bottom > viewportHeight;
+  const isOutsideLeft = rect.left < 0;
+  const isOutsideRight = rect.right > viewportWidth;
+  
+  // Check if element is intersecting viewport edges (partially visible)
+  const isIntersectingTop = rect.top < 50 && rect.bottom > 0;
+  const isIntersectingBottom = rect.bottom > viewportHeight - 50 && rect.top < viewportHeight;
+  const isIntersectingLeft = rect.left < 50 && rect.right > 0;
+  const isIntersectingRight = rect.right > viewportWidth - 50 && rect.left < viewportWidth;
+  
+  // Scroll if element is outside viewport or intersecting edges
+  if (isOutsideTop || isOutsideBottom || isOutsideLeft || isOutsideRight ||
+      isIntersectingTop || isIntersectingBottom || isIntersectingLeft || isIntersectingRight) {
+    
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'center'
+    });
   }
 }
 
